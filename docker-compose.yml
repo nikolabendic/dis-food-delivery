@@ -1,0 +1,120 @@
+services:
+  eureka-server:
+    build: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  user-db:
+    image: postgres:16
+    container_name: user-db
+    environment:
+      - POSTGRES_USER=user_service
+      - POSTGRES_PASSWORD=user_pass
+      - POSTGRES_DB=userdb
+    ports:
+      - "5433:5432"
+
+  restaurant-db:
+    image: postgres:16
+    container_name: restaurant-db
+    environment:
+      - POSTGRES_USER=restaurant_service
+      - POSTGRES_PASSWORD=restaurant_pass
+      - POSTGRES_DB=restaurantdb
+    ports:
+      - "5434:5432"
+
+  order-db:
+    image: postgres:16
+    container_name: order-db
+    environment:
+      - POSTGRES_USER=order_service
+      - POSTGRES_PASSWORD=order_pass
+      - POSTGRES_DB=orderdb
+    ports:
+      - "5435:5432"
+
+  delivery-db:
+    image: postgres:16
+    container_name: delivery-db
+    environment:
+      - POSTGRES_USER=delivery_service
+      - POSTGRES_PASSWORD=delivery_pass
+      - POSTGRES_DB=deliverydb
+    ports:
+      - "5436:5432"
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eureka-server
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eureka-server
+      - user-db
+
+  restaurant-service:
+    build: ./restaurant-service
+    container_name: restaurant-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eureka-server
+      - restaurant-db
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eureka-server
+      - order-db
+      - rabbitmq
+
+  delivery-service:
+    build: ./delivery-service
+    container_name: delivery-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eureka-server
+      - delivery-db
+      - rabbitmq
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - eureka-server
+      - rabbitmq
